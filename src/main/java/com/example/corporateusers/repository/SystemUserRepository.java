@@ -18,11 +18,23 @@ public interface SystemUserRepository extends JpaRepository<SystemUser, Long> {
 
     Optional<SystemUser> findByUsernameIgnoreCase(String username);
 
+    @EntityGraph(attributePaths = "roles")
+    Optional<SystemUser> findWithRolesByUsernameIgnoreCase(String username);
+
+    @EntityGraph(attributePaths = "roles")
+    Optional<SystemUser> findWithRolesByEmailIgnoreCase(String email);
+
+    @EntityGraph(attributePaths = "roles")
     List<SystemUser> findByStatusOrderByCreatedAtDesc(UserStatus status);
 
+    @EntityGraph(attributePaths = "roles")
+    @Query("select u from SystemUser u order by u.createdAt desc")
+    List<SystemUser> findAllWithRolesOrderByCreatedAtDesc();
+
     @Query("""
-            select u
+            select distinct u
             from SystemUser u
+            left join fetch u.roles r
             where lower(u.username) like lower(concat('%', :query, '%'))
                or lower(u.email) like lower(concat('%', :query, '%'))
                or lower(u.fullName) like lower(concat('%', :query, '%'))
@@ -30,7 +42,7 @@ public interface SystemUserRepository extends JpaRepository<SystemUser, Long> {
             """)
     List<SystemUser> search(@Param("query") String query);
 
-    @EntityGraph(attributePaths = "passwordHistory")
+    @EntityGraph(attributePaths = {"passwordHistory", "roles"})
     @Query("select u from SystemUser u where u.id = :id")
     Optional<SystemUser> findByIdWithPasswordHistory(@Param("id") Long id);
 }

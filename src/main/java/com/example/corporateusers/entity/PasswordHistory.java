@@ -25,7 +25,7 @@ public class PasswordHistory {
     @JoinColumn(name = "user_id", nullable = false)
     private SystemUser user;
 
-    @Column(nullable = false, length = 120)
+    @Column(nullable = false, length = 255)
     private String passwordHash;
 
     @Column(nullable = false, length = 80)

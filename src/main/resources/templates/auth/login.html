@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Вхід до системи')}"></head>
+<body>
+<main class="container login-container">
+    <section class="card login-card">
+        <h1>Corporate User Service</h1>
+
+        <div th:if="${param.error}" class="alert error">Невірний логін або пароль, або обліковий запис неактивний.</div>
+        <div th:if="${param.logout}" class="alert success">Ви успішно вийшли із системи.</div>
+
+        <form method="post" th:action="@{/login}" class="form">
+            <label>Username або email
+                <input type="text" name="username" autofocus required>
+            </label>
+            <label>Пароль
+                <input type="password" name="password" required>
+            </label>
+            <button class="button primary" type="submit">Увійти</button>
+        </form>
+
+<!--        <div class="credentials-box">-->
+<!--            <strong>Тестові облікові записи:</strong>-->
+<!--            <div>ADMIN: <code>admin</code> / <code>AdminPass123</code></div>-->
+<!--            <div>CUSTOMER: <code>customer</code> / <code>CustomerPass123</code></div>-->
+<!--        </div>-->
+    </section>
+</main>
+</body>
+</html>

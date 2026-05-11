@@ -17,6 +17,7 @@
             <dt>ID</dt><dd th:text="${user.id}"></dd>
             <dt>Email</dt><dd th:text="${user.email}"></dd>
             <dt>Статус</dt><dd th:text="${user.status}"></dd>
+            <dt>Ролі</dt><dd><span class="badge" th:each="role : ${user.roles}" th:text="${role.code}"></span></dd>
             <dt>Невдалі входи</dt><dd th:text="${user.failedLoginAttempts}"></dd>
             <dt>Дата створення</dt><dd th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
             <dt>Останнє оновлення</dt><dd th:text="${#temporals.format(user.updatedAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
@@ -37,7 +38,7 @@
     <section class="card">
         <h2>Історія зміни паролів</h2>
         <table>
-            <thead><tr><th>ID</th><th>Дата зміни</th><th>Ким змінено</th><th>BCrypt hash</th></tr></thead>
+            <thead><tr><th>ID</th><th>Дата зміни</th><th>Ким змінено</th><th>Password hash</th></tr></thead>
             <tbody>
             <tr th:each="item : ${passwordHistory}">
                 <td th:text="${item.id}"></td>

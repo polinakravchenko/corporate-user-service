@@ -5,7 +5,8 @@
 <header th:replace="~{layout :: header}"></header>
 <main class="container narrow">
     <section class="card">
-        <h1>Створення користувача</h1>
+        <h1>Створення customer-користувача</h1>
+        <p>Новий користувач автоматично отримує роль CUSTOMER. Роль ADMIN створюється системною Liquibase-міграцією.</p>
         <form method="post" th:action="@{/users}" th:object="${form}" class="form">
             <div th:if="${#fields.hasGlobalErrors()}" class="alert error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
             <label>Username<input th:field="*{username}" type="text"></label>
@@ -23,7 +24,7 @@
             </label>
             <div class="form-actions">
                 <a class="button" th:href="@{/users}">Назад</a>
-                <button class="button primary" type="submit">Створити</button>
+                <button class="button primary" type="submit">Створити customer</button>
             </div>
         </form>
     </section>

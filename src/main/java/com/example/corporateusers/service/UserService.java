@@ -5,10 +5,13 @@ import com.example.corporateusers.dto.StatusChangeForm;
 import com.example.corporateusers.dto.UserCreateForm;
 import com.example.corporateusers.dto.UserUpdateForm;
 import com.example.corporateusers.entity.PasswordHistory;
+import com.example.corporateusers.entity.RoleCode;
+import com.example.corporateusers.entity.SystemRole;
 import com.example.corporateusers.entity.SystemUser;
 import com.example.corporateusers.entity.UserStatus;
 import com.example.corporateusers.exception.BusinessException;
 import com.example.corporateusers.repository.PasswordHistoryRepository;
+import com.example.corporateusers.repository.SystemRoleRepository;
 import com.example.corporateusers.repository.SystemUserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,15 +26,19 @@ import java.util.List;
 public class UserService {
 
     private static final String SYSTEM_ACTOR = "system";
+    private static final String ADMIN_ACTOR = "admin";
 
     private final SystemUserRepository userRepository;
+    private final SystemRoleRepository roleRepository;
     private final PasswordHistoryRepository passwordHistoryRepository;
     private final PasswordEncoder passwordEncoder;
 
     public UserService(SystemUserRepository userRepository,
+                       SystemRoleRepository roleRepository,
                        PasswordHistoryRepository passwordHistoryRepository,
                        PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordHistoryRepository = passwordHistoryRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -44,15 +51,19 @@ public class UserService {
         if (StringUtils.hasText(query)) {
             return userRepository.search(query.trim());
         }
-        return userRepository.findAll().stream()
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                .toList();
+        return userRepository.findAllWithRolesOrderByCreatedAtDesc();
     }
 
     @Transactional(readOnly = true)
     public SystemUser getUser(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public SystemUser getByUsername(String username) {
+        return userRepository.findWithRolesByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
     }
 
     @Transactional(readOnly = true)
@@ -68,6 +79,11 @@ public class UserService {
 
     @Transactional
     public SystemUser create(UserCreateForm form) {
+        return createCustomer(form);
+    }
+
+    @Transactional
+    public SystemUser createCustomer(UserCreateForm form) {
         validateUniqueUsername(form.getUsername());
         validateUniqueEmail(form.getEmail());
 
@@ -77,19 +93,25 @@ public class UserService {
         user.setFullName(form.getFullName().trim());
         user.setStatus(form.getStatus());
         user.setPasswordHash(passwordEncoder.encode(form.getPassword()));
-        user.addPasswordHistory(new PasswordHistory(user.getPasswordHash(), SYSTEM_ACTOR));
+        user.addRole(getRequiredRole(RoleCode.CUSTOMER));
+        user.addPasswordHistory(new PasswordHistory(user.getPasswordHash(), ADMIN_ACTOR));
         return userRepository.save(user);
     }
 
     @Transactional
     public SystemUser update(Long id, UserUpdateForm form) {
         SystemUser user = getUser(id);
-        if (!user.getEmail().equalsIgnoreCase(form.getEmail())
-                && userRepository.existsByEmailIgnoreCase(form.getEmail())) {
-            throw new BusinessException("Email already exists: " + form.getEmail());
+        applyProfileUpdate(user, form);
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public SystemUser updateOwnProfile(String username, UserUpdateForm form) {
+        SystemUser user = getByUsername(username);
+        if (!user.hasRole(RoleCode.CUSTOMER)) {
+            throw new BusinessException("Only customers can update data in cabinet");
         }
-        user.setEmail(form.getEmail().trim());
-        user.setFullName(form.getFullName().trim());
+        applyProfileUpdate(user, form);
         return userRepository.save(user);
     }
 
@@ -109,25 +131,56 @@ public class UserService {
 
     @Transactional
     public SystemUser changePassword(Long id, PasswordChangeForm form) {
-        if (!form.getNewPassword().equals(form.getConfirmPassword())) {
-            throw new BusinessException("Password confirmation does not match");
-        }
         SystemUser user = getUser(id);
-        if (passwordEncoder.matches(form.getNewPassword(), user.getPasswordHash())) {
-            throw new BusinessException("New password must differ from the current password");
+        changePasswordInternal(user, form, ADMIN_ACTOR);
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public SystemUser changeOwnPassword(String username, PasswordChangeForm form) {
+        SystemUser user = getByUsername(username);
+        if (!user.hasRole(RoleCode.CUSTOMER)) {
+            throw new BusinessException("Only customers can change password in cabinet");
         }
-        String newHash = passwordEncoder.encode(form.getNewPassword());
-        user.setPasswordHash(newHash);
-        user.setPasswordChangedAt(LocalDateTime.now());
-        user.addPasswordHistory(new PasswordHistory(newHash, SYSTEM_ACTOR));
-        user.setFailedLoginAttempts(0);
+        changePasswordInternal(user, form, user.getUsername());
         return userRepository.save(user);
     }
 
     @Transactional
     public void delete(Long id) {
         SystemUser user = getUser(id);
+        if (user.hasRole(RoleCode.ADMIN)) {
+            throw new BusinessException("Administrator account cannot be deleted from this screen");
+        }
         userRepository.delete(user);
+    }
+
+    private void applyProfileUpdate(SystemUser user, UserUpdateForm form) {
+        if (!user.getEmail().equalsIgnoreCase(form.getEmail())
+                && userRepository.existsByEmailIgnoreCase(form.getEmail())) {
+            throw new BusinessException("Email already exists: " + form.getEmail());
+        }
+        user.setEmail(form.getEmail().trim());
+        user.setFullName(form.getFullName().trim());
+    }
+
+    private void changePasswordInternal(SystemUser user, PasswordChangeForm form, String actor) {
+        if (!form.getNewPassword().equals(form.getConfirmPassword())) {
+            throw new BusinessException("Password confirmation does not match");
+        }
+        if (passwordEncoder.matches(form.getNewPassword(), user.getPasswordHash())) {
+            throw new BusinessException("New password must differ from the current password");
+        }
+        String newHash = passwordEncoder.encode(form.getNewPassword());
+        user.setPasswordHash(newHash);
+        user.setPasswordChangedAt(LocalDateTime.now());
+        user.addPasswordHistory(new PasswordHistory(newHash, actor));
+        user.setFailedLoginAttempts(0);
+    }
+
+    private SystemRole getRequiredRole(RoleCode code) {
+        return roleRepository.findByCode(code)
+                .orElseThrow(() -> new IllegalStateException("Required role is missing: " + code));
     }
 
     private void validateUniqueUsername(String username) {

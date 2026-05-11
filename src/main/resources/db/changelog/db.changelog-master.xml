@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="001-create-security-user-schema" author="polina">
+        <createTable tableName="system_users">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(80)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_system_users_username"/>
+            </column>
+            <column name="email" type="VARCHAR(160)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_system_users_email"/>
+            </column>
+            <column name="full_name" type="VARCHAR(160)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password_hash" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="failed_login_attempts" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password_changed_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_status_changed_at" type="TIMESTAMP"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="system_roles">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(40)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_system_roles_code"/>
+            </column>
+            <column name="description" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="user_roles">
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="user_roles" columnNames="user_id, role_id" constraintName="pk_user_roles"/>
+        <addForeignKeyConstraint baseTableName="user_roles" baseColumnNames="user_id"
+                                 referencedTableName="system_users" referencedColumnNames="id"
+                                 constraintName="fk_user_roles_user" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="user_roles" baseColumnNames="role_id"
+                                 referencedTableName="system_roles" referencedColumnNames="id"
+                                 constraintName="fk_user_roles_role"/>
+
+        <createTable tableName="password_history">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password_hash" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="changed_by" type="VARCHAR(80)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="changed_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="password_history" baseColumnNames="user_id"
+                                 referencedTableName="system_users" referencedColumnNames="id"
+                                 constraintName="fk_password_history_user" onDelete="CASCADE"/>
+
+        <createIndex tableName="system_users" indexName="idx_system_users_status">
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="password_history" indexName="idx_password_history_user">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="002-insert-default-roles-and-users" author="polina">
+        <insert tableName="system_roles">
+            <column name="id" valueNumeric="1"/>
+            <column name="code" value="ADMIN"/>
+            <column name="description" value="Administrator with full access to user management"/>
+        </insert>
+        <insert tableName="system_roles">
+            <column name="id" valueNumeric="2"/>
+            <column name="code" value="CUSTOMER"/>
+            <column name="description" value="Customer with access only to own cabinet"/>
+        </insert>
+
+        <insert tableName="system_users">
+            <column name="id" valueNumeric="1"/>
+            <column name="username" value="admin"/>
+            <column name="email" value="admin@example.com"/>
+            <column name="full_name" value="System Administrator"/>
+            <column name="password_hash" value="{noop}AdminPass123"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="failed_login_attempts" valueNumeric="0"/>
+            <column name="password_changed_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+        <insert tableName="system_users">
+            <column name="id" valueNumeric="2"/>
+            <column name="username" value="customer"/>
+            <column name="email" value="customer@example.com"/>
+            <column name="full_name" value="Demo Customer"/>
+            <column name="password_hash" value="{noop}CustomerPass123"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="failed_login_attempts" valueNumeric="0"/>
+            <column name="password_changed_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="created_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="updated_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="version" valueNumeric="0"/>
+        </insert>
+
+        <insert tableName="user_roles">
+            <column name="user_id" valueNumeric="1"/>
+            <column name="role_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="user_roles">
+            <column name="user_id" valueNumeric="2"/>
+            <column name="role_id" valueNumeric="2"/>
+        </insert>
+
+        <insert tableName="password_history">
+            <column name="user_id" valueNumeric="1"/>
+            <column name="password_hash" value="{noop}AdminPass123"/>
+            <column name="changed_by" value="liquibase"/>
+            <column name="changed_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="password_history">
+            <column name="user_id" valueNumeric="2"/>
+            <column name="password_hash" value="{noop}CustomerPass123"/>
+            <column name="changed_by" value="liquibase"/>
+            <column name="changed_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

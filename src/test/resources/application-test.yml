@@ -4,18 +4,17 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password:
+  liquibase:
+    change-log: classpath:db.changelog-test.xml
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     open-in-view: false
     show-sql: false
     properties:
       hibernate:
-        format_sql: true
         jdbc:
           time_zone: UTC
-  thymeleaf:
-    cache: false
 
 app:
   demo-data:

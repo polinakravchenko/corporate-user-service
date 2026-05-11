@@ -8,9 +8,9 @@
         <div class="page-header">
             <div>
                 <h1>Користувачі системи</h1>
-                <p>Облікові дані, статуси та керування паролями.</p>
+                <p>Адміністративний розділ: облікові дані, ролі, статуси та керування паролями.</p>
             </div>
-            <a class="button primary" th:href="@{/users/new}">+ Новий користувач</a>
+            <a class="button primary" th:href="@{/users/new}">+ Новий customer</a>
         </div>
 
         <div th:if="${success}" class="alert success" th:text="${success}"></div>
@@ -32,6 +32,7 @@
                 <th>Email</th>
                 <th>ПІБ</th>
                 <th>Статус</th>
+                <th>Ролі</th>
                 <th>Оновлено</th>
                 <th>Дії</th>
             </tr>
@@ -43,6 +44,7 @@
                 <td th:text="${user.email}"></td>
                 <td th:text="${user.fullName}"></td>
                 <td><span class="badge" th:classappend="${user.status}" th:text="${user.status}"></span></td>
+                <td><span class="badge" th:each="role : ${user.roles}" th:text="${role.code}"></span></td>
                 <td th:text="${#temporals.format(user.updatedAt, 'yyyy-MM-dd HH:mm')}"></td>
                 <td class="actions">
                     <a th:href="@{/users/{id}(id=${user.id})}">Перегляд</a>
@@ -51,7 +53,7 @@
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(users)}">
-                <td colspan="7" class="empty">Користувачів не знайдено.</td>
+                <td colspan="8" class="empty">Користувачів не знайдено.</td>
             </tr>
             </tbody>
         </table>

@@ -26,7 +26,7 @@ public class UserCreateForm {
     private String password;
 
     @NotNull
-    private UserStatus status = UserStatus.PENDING;
+    private UserStatus status = UserStatus.ACTIVE;
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<html lang="uk" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
 <head th:fragment="head(title)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +9,18 @@
 <body>
 <header th:fragment="header">
     <nav class="topbar">
-        <a class="brand" th:href="@{/users}">Corporate User Service</a>
-        <a th:href="@{/users}">Користувачі</a>
-        <a th:href="@{/users/new}">Створити користувача</a>
+        <a class="brand" th:href="@{/}">Corporate User Service</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/users}">Користувачі</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/users/new}">Створити customer</a>
+        <a sec:authorize="hasRole('CUSTOMER')" th:href="@{/cabinet}">Мій кабінет</a>
+        <span class="spacer"></span>
+        <span class="current-user" sec:authorize="isAuthenticated()">
+            <span sec:authentication="name"></span>
+            <span class="role" sec:authentication="principal.authorities"></span>
+        </span>
+        <form sec:authorize="isAuthenticated()" method="post" th:action="@{/logout}" class="logout-form">
+            <button type="submit" class="link-button">Вийти</button>
+        </form>
     </nav>
 </header>
 </body>

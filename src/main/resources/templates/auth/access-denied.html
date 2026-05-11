@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Доступ заборонено')}"></head>
+<body>
+<header th:replace="~{layout :: header}"></header>
+<main class="container narrow">
+    <section class="card">
+        <h1>Доступ заборонено</h1>
+        <p>Поточний користувач не має прав для перегляду цієї сторінки.</p>
+        <div class="form-actions">
+            <a class="button primary" th:href="@{/}">Повернутися</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

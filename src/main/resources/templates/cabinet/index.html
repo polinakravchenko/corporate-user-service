@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Кабінет користувача')}"></head>
+<body>
+<header th:replace="~{layout :: header}"></header>
+<main class="container">
+    <section class="card">
+        <div class="page-header">
+            <div>
+                <h1>Мій кабінет</h1>
+                <p>Customer працює тільки зі своїми персональними даними.</p>
+            </div>
+            <span class="badge large" th:classappend="${user.status}" th:text="${user.status}"></span>
+        </div>
+        <div th:if="${success}" class="alert success" th:text="${success}"></div>
+        <dl class="details-grid">
+            <dt>ID</dt><dd th:text="${user.id}"></dd>
+            <dt>Username</dt><dd th:text="${user.username}"></dd>
+            <dt>Email</dt><dd th:text="${user.email}"></dd>
+            <dt>ПІБ</dt><dd th:text="${user.fullName}"></dd>
+            <dt>Статус</dt><dd th:text="${user.status}"></dd>
+            <dt>Дата створення</dt><dd th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
+            <dt>Остання зміна пароля</dt><dd th:text="${#temporals.format(user.passwordChangedAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
+        </dl>
+        <div class="form-actions">
+            <a class="button" th:href="@{/cabinet/edit}">Редагувати профіль</a>
+            <a class="button" th:href="@{/cabinet/password}">Змінити пароль</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

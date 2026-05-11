@@ -144,3 +144,30 @@ mvn test
 ```
 
 The tests use H2 in PostgreSQL compatibility mode, so PostgreSQL and Docker are not required for test execution. Detailed testing instructions are available in `TESTING.md`.
+
+
+## Practical Work 4: Spring Security + DAO Provider
+
+This version includes Spring Security integration for the previously created Thymeleaf/Hibernate application.
+
+Main additions:
+
+- Liquibase database migration for users, roles, user-role mapping and password history.
+- Default roles: `ADMIN` and `CUSTOMER`.
+- Default users created by migration:
+  - `admin` / `AdminPass123` → `ADMIN`.
+  - `customer` / `CustomerPass123` → `CUSTOMER`.
+- DAO authentication provider with `CorporateUserDetailsService`.
+- Role-based access control:
+  - `/users/**` → only `ADMIN`.
+  - `/cabinet/**` → only `CUSTOMER`.
+- Admin can create and manage customer accounts.
+- Customer can work only with own cabinet/profile/password.
+
+Login page:
+
+```text
+http://localhost:8080/login
+```
+
+Additional documentation is available in `SECURITY.md`.

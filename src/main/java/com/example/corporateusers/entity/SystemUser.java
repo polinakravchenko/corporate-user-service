@@ -9,6 +9,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -17,7 +20,9 @@ import jakarta.persistence.Version;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "system_users")
@@ -36,7 +41,7 @@ public class SystemUser {
     @Column(nullable = false, length = 160)
     private String fullName;
 
-    @Column(nullable = false, length = 120)
+    @Column(nullable = false, length = 255)
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
@@ -60,15 +65,29 @@ public class SystemUser {
     @Version
     private long version;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<SystemRole> roles = new HashSet<>();
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<PasswordHistory> passwordHistory = new ArrayList<>();
 
     @PrePersist
     void prePersist() {
         LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-        this.passwordChangedAt = now;
+        if (this.createdAt == null) {
+            this.createdAt = now;
+        }
+        if (this.updatedAt == null) {
+            this.updatedAt = now;
+        }
+        if (this.passwordChangedAt == null) {
+            this.passwordChangedAt = now;
+        }
         if (this.status == null) {
             this.status = UserStatus.PENDING;
         }
@@ -82,6 +101,14 @@ public class SystemUser {
     public void addPasswordHistory(PasswordHistory history) {
         passwordHistory.add(history);
         history.setUser(this);
+    }
+
+    public void addRole(SystemRole role) {
+        roles.add(role);
+    }
+
+    public boolean hasRole(RoleCode roleCode) {
+        return roles.stream().anyMatch(role -> role.getCode() == roleCode);
     }
 
     public Long getId() { return id; }
@@ -104,5 +131,6 @@ public class SystemUser {
     public LocalDateTime getLastStatusChangedAt() { return lastStatusChangedAt; }
     public void setLastStatusChangedAt(LocalDateTime lastStatusChangedAt) { this.lastStatusChangedAt = lastStatusChangedAt; }
     public long getVersion() { return version; }
+    public Set<SystemRole> getRoles() { return roles; }
     public List<PasswordHistory> getPasswordHistory() { return passwordHistory; }
 }

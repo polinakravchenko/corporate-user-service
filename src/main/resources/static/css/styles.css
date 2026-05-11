@@ -39,3 +39,12 @@ dd { margin:0; }
 .hash { font-family: Consolas, monospace; font-size:12px; word-break:break-all; }
 .empty { text-align:center; color:var(--muted); padding:30px; }
 @media (max-width: 720px) { .page-header, .filters { flex-direction:column; align-items:stretch; } .details-grid { grid-template-columns:1fr; } }
+.spacer { flex:1; }
+.current-user { font-size:13px; color:#d1d5db; display:flex; gap:8px; align-items:center; }
+.role { color:#93c5fd; font-size:12px; }
+.logout-form { margin:0; }
+.link-button { background:transparent; color:white; border:0; padding:0; cursor:pointer; font:inherit; }
+.login-container { max-width:560px; }
+.login-card { margin-top:8vh; }
+.credentials-box { margin-top:18px; background:#f3f4f6; border:1px solid var(--border); border-radius:12px; padding:14px; display:grid; gap:6px; }
+code { background:#e5e7eb; padding:2px 6px; border-radius:6px; }

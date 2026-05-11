@@ -9,9 +9,11 @@ spring:
     username: admin
     password: admin
     driver-class-name: org.postgresql.Driver
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     open-in-view: false
     show-sql: true
     properties:
@@ -22,7 +24,12 @@ spring:
   thymeleaf:
     cache: false
 
+app:
+  demo-data:
+    enabled: false
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
+    org.springframework.security: INFO
