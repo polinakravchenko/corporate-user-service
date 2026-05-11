@@ -5,9 +5,11 @@ import com.example.corporateusers.entity.UserStatus;
 import com.example.corporateusers.repository.SystemUserRepository;
 import com.example.corporateusers.service.UserService;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(name = "app.demo-data.enabled", havingValue = "true", matchIfMissing = true)
 public class DemoDataInitializer implements CommandLineRunner {
 
     private final SystemUserRepository userRepository;

@@ -15,6 +15,7 @@
     <artifactId>corporate-user-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>corporate-user-service</name>
+    <description>Spring Boot + Hibernate + Thymeleaf user management service</description>
 
     <properties>
         <java.version>17</java.version>

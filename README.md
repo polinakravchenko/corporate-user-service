@@ -132,3 +132,15 @@ Recommended screenshots:
 8. User details page with password history.
 9. Change password page.
 10. PostgreSQL tables in pgAdmin.
+
+## Automated tests
+
+The project includes JUnit 5 tests for controllers, repositories, services and end-to-end user-management scenarios.
+
+Run all tests:
+
+```bash
+mvn test
+```
+
+The tests use H2 in PostgreSQL compatibility mode, so PostgreSQL and Docker are not required for test execution. Detailed testing instructions are available in `TESTING.md`.
