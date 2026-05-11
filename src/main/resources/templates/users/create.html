@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Створення користувача')}"></head>
+<body>
+<header th:replace="~{layout :: header}"></header>
+<main class="container narrow">
+    <section class="card">
+        <h1>Створення користувача</h1>
+        <form method="post" th:action="@{/users}" th:object="${form}" class="form">
+            <div th:if="${#fields.hasGlobalErrors()}" class="alert error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+            <label>Username<input th:field="*{username}" type="text"></label>
+            <div class="field-error" th:errors="*{username}"></div>
+            <label>Email<input th:field="*{email}" type="email"></label>
+            <div class="field-error" th:errors="*{email}"></div>
+            <label>Повне ім'я<input th:field="*{fullName}" type="text"></label>
+            <div class="field-error" th:errors="*{fullName}"></div>
+            <label>Початковий пароль<input th:field="*{password}" type="password"></label>
+            <div class="field-error" th:errors="*{password}"></div>
+            <label>Статус
+                <select th:field="*{status}">
+                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+                </select>
+            </label>
+            <div class="form-actions">
+                <a class="button" th:href="@{/users}">Назад</a>
+                <button class="button primary" type="submit">Створити</button>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>

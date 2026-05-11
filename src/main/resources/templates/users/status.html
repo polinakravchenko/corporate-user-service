@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Зміна статусу')}"></head>
+<body>
+<header th:replace="~{layout :: header}"></header>
+<main class="container narrow">
+    <section class="card">
+        <h1>Зміна статусу: <span th:text="${user.username}"></span></h1>
+        <form method="post" th:action="@{/users/{id}/status(id=${user.id})}" th:object="${form}" class="form">
+            <label>Новий статус
+                <select th:field="*{status}">
+                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+                </select>
+            </label>
+            <div class="field-error" th:errors="*{status}"></div>
+            <label>Причина зміни<textarea th:field="*{reason}" rows="4" placeholder="Наприклад: активація після перевірки або блокування через ризик"></textarea></label>
+            <div class="field-error" th:errors="*{reason}"></div>
+            <div class="form-actions">
+                <a class="button" th:href="@{/users/{id}(id=${user.id})}">Назад</a>
+                <button class="button primary" type="submit">Змінити статус</button>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>

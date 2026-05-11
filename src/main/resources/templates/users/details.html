@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Дані користувача')}"></head>
+<body>
+<header th:replace="~{layout :: header}"></header>
+<main class="container">
+    <section class="card">
+        <div class="page-header">
+            <div>
+                <h1 th:text="${user.fullName}">User</h1>
+                <p th:text="${user.username}">username</p>
+            </div>
+            <span class="badge large" th:classappend="${user.status}" th:text="${user.status}"></span>
+        </div>
+        <div th:if="${success}" class="alert success" th:text="${success}"></div>
+        <dl class="details-grid">
+            <dt>ID</dt><dd th:text="${user.id}"></dd>
+            <dt>Email</dt><dd th:text="${user.email}"></dd>
+            <dt>Статус</dt><dd th:text="${user.status}"></dd>
+            <dt>Невдалі входи</dt><dd th:text="${user.failedLoginAttempts}"></dd>
+            <dt>Дата створення</dt><dd th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
+            <dt>Останнє оновлення</dt><dd th:text="${#temporals.format(user.updatedAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
+            <dt>Зміна пароля</dt><dd th:text="${#temporals.format(user.passwordChangedAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
+            <dt>Зміна статусу</dt><dd th:text="${user.lastStatusChangedAt == null ? '-' : #temporals.format(user.lastStatusChangedAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
+        </dl>
+        <div class="form-actions">
+            <a class="button" th:href="@{/users}">До списку</a>
+            <a class="button" th:href="@{/users/{id}/edit(id=${user.id})}">Редагувати</a>
+            <a class="button" th:href="@{/users/{id}/password(id=${user.id})}">Змінити пароль</a>
+            <a class="button" th:href="@{/users/{id}/status(id=${user.id})}">Змінити статус</a>
+            <form method="post" th:action="@{/users/{id}/delete(id=${user.id})}" onsubmit="return confirm('Видалити користувача?')">
+                <button class="button danger" type="submit">Видалити</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Історія зміни паролів</h2>
+        <table>
+            <thead><tr><th>ID</th><th>Дата зміни</th><th>Ким змінено</th><th>BCrypt hash</th></tr></thead>
+            <tbody>
+            <tr th:each="item : ${passwordHistory}">
+                <td th:text="${item.id}"></td>
+                <td th:text="${#temporals.format(item.changedAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                <td th:text="${item.changedBy}"></td>
+                <td class="hash" th:text="${item.passwordHash}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

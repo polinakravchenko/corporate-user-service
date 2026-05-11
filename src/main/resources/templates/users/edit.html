@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Редагування користувача')}"></head>
+<body>
+<header th:replace="~{layout :: header}"></header>
+<main class="container narrow">
+    <section class="card">
+        <h1>Редагування користувача <span th:text="${user.username}"></span></h1>
+        <form method="post" th:action="@{/users/{id}/edit(id=${user.id})}" th:object="${form}" class="form">
+            <div th:if="${#fields.hasGlobalErrors()}" class="alert error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+            <label>Email<input th:field="*{email}" type="email"></label>
+            <div class="field-error" th:errors="*{email}"></div>
+            <label>Повне ім'я<input th:field="*{fullName}" type="text"></label>
+            <div class="field-error" th:errors="*{fullName}"></div>
+            <div class="form-actions">
+                <a class="button" th:href="@{/users/{id}(id=${user.id})}">Назад</a>
+                <button class="button primary" type="submit">Зберегти</button>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>
