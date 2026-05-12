@@ -23,10 +23,28 @@ spring:
           time_zone: UTC
   thymeleaf:
     cache: false
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: corporate-user-service
+            client-secret: corporate-user-secret
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: openid,profile,email
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8082/realms/corporate-users
+            user-name-attribute: preferred_username
 
 app:
   demo-data:
     enabled: false
+  keycloak:
+    realm: corporate-users
+    client-id: corporate-user-service
 
 logging:
   level:

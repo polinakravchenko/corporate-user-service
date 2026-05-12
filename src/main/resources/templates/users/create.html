@@ -6,8 +6,9 @@
 <main class="container narrow">
     <section class="card">
         <h1>Створення customer-користувача</h1>
-        <p>Новий користувач автоматично отримує роль CUSTOMER. Роль ADMIN створюється системною Liquibase-міграцією.</p>
+        <p>Новий користувач автоматично отримує роль CUSTOMER у локальній БД застосунку. Для входу в систему такий самий username має існувати в Keycloak з роллю CUSTOMER.</p>
         <form method="post" th:action="@{/users}" th:object="${form}" class="form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <div th:if="${#fields.hasGlobalErrors()}" class="alert error" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
             <label>Username<input th:field="*{username}" type="text"></label>
             <div class="field-error" th:errors="*{username}"></div>

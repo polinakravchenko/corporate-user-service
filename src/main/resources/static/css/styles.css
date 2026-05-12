@@ -48,3 +48,5 @@ dd { margin:0; }
 .login-card { margin-top:8vh; }
 .credentials-box { margin-top:18px; background:#f3f4f6; border:1px solid var(--border); border-radius:12px; padding:14px; display:grid; gap:6px; }
 code { background:#e5e7eb; padding:2px 6px; border-radius:6px; }
+.wide { width:100%; text-align:center; }
+.muted { color:var(--muted); font-size:14px; }

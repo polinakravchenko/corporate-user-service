@@ -20,11 +20,12 @@
             <dt>ПІБ</dt><dd th:text="${user.fullName}"></dd>
             <dt>Статус</dt><dd th:text="${user.status}"></dd>
             <dt>Дата створення</dt><dd th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
-            <dt>Остання зміна пароля</dt><dd th:text="${#temporals.format(user.passwordChangedAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
+            <dt>Keycloak subject</dt><dd th:text="${user.keycloakSubject ?: '—'}"></dd>
+            <dt>Остання синхронізація</dt><dd th:text="${#temporals.format(user.updatedAt, 'yyyy-MM-dd HH:mm:ss')}"></dd>
         </dl>
         <div class="form-actions">
             <a class="button" th:href="@{/cabinet/edit}">Редагувати профіль</a>
-            <a class="button" th:href="@{/cabinet/password}">Змінити пароль</a>
+            <span class="muted">Пароль і автентифікація керуються у Keycloak.</span>
         </div>
     </section>
 </main>

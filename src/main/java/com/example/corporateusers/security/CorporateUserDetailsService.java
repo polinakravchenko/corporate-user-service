@@ -20,17 +20,9 @@ public class CorporateUserDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-        System.out.println("Trying to login user: " + usernameOrEmail);
-
         SystemUser user = userRepository.findWithRolesByUsernameIgnoreCase(usernameOrEmail)
                 .or(() -> userRepository.findWithRolesByEmailIgnoreCase(usernameOrEmail))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + usernameOrEmail));
-
-        System.out.println("Found user: " + user.getUsername());
-        System.out.println("Status: " + user.getStatus());
-        System.out.println("Password hash: " + user.getPasswordHash());
-        System.out.println("Roles: " + user.getRoles());
-
         return new CorporateUserDetails(user);
     }
 }

@@ -66,6 +66,11 @@ class SecurityAccessControlE2ETest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void loginPage_shouldRenderKeycloakEntryPoint() throws Exception {
+        mockMvc.perform(get("/login"))
+                .andExpect(status().isOk());
+    }
 
     private void createUser(String username, String email, RoleCode roleCode) {
         SystemRole role = roleRepository.findByCode(roleCode).orElseThrow();

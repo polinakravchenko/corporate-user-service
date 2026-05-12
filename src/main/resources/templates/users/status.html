@@ -7,6 +7,7 @@
     <section class="card">
         <h1>Зміна статусу: <span th:text="${user.username}"></span></h1>
         <form method="post" th:action="@{/users/{id}/status(id=${user.id})}" th:object="${form}" class="form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <label>Новий статус
                 <select th:field="*{status}">
                     <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>

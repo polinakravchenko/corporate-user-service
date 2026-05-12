@@ -1,173 +1,190 @@
-# Corporate User Service
+# Corporate User Service — Spring Security + Thymeleaf + Keycloak
 
-Spring Boot application for the practical work topic: **Creating a Spring Boot application using Hibernate and Thymeleaf**.
+Corporate User Service is a Spring Boot application for managing system users in a corporate environment. The application uses PostgreSQL, Hibernate/JPA, Thymeleaf and Spring Security. In this version authentication is delegated to Keycloak through OpenID Connect / OAuth2 Login.
 
-## Functional scope
+## Practical work 5 scope
 
-The application implements a user service for a corporate system:
+Implemented features:
 
-- Create system users.
-- Store account data: username, email, full name, status.
-- Store passwords only as BCrypt hashes.
-- Change user password.
-- Save password change history.
-- Change user status: `PENDING`, `ACTIVE`, `BLOCKED`, `DISABLED`.
-- Search and filter users.
-- Render UI with Thymeleaf.
-- Persist data in PostgreSQL through Hibernate/JPA.
+- Keycloak integration for login.
+- Spring Security OAuth2 Login configuration.
+- Realm roles: `ADMIN`, `CUSTOMER`.
+- Custom Keycloak role mapper from token claims to Spring Security authorities.
+- `ADMIN` access to user-management pages under `/users/**`.
+- `CUSTOMER` access only to the personal cabinet under `/cabinet/**`.
+- Local PostgreSQL storage for application user profile data.
+- Liquibase migrations for users, roles, user-role relation, password history and Keycloak subject column.
+- Synchronization of authenticated Keycloak users into the local application database.
+- Thymeleaf pages for login, admin user management and customer cabinet.
 
-## Technologies
+Spring Security's OAuth2 Login feature lets an application authenticate users using an external OAuth2/OpenID Connect provider. Keycloak is used here as that identity provider.
 
-- Java 17
-- Spring Boot 3.5.10
-- Spring Web MVC
-- Spring Data JPA
-- Hibernate
-- Thymeleaf
-- PostgreSQL
-- BCrypt password hashing
-- Jakarta Validation
+## Test accounts
 
-## Database infrastructure
+Keycloak realm import creates two users:
 
-The supplied `docker-compose.yml` is located in `docker/docker-compose.yml` and includes:
+| Role | Username | Password |
+|---|---|---|
+| ADMIN | `admin` | `AdminPass123` |
+| CUSTOMER | `customer` | `CustomerPass123` |
 
-- PostgreSQL 15
-- pgAdmin
-- MongoDB
-- Mongo Express
-- RabbitMQ
-
-This practical work uses PostgreSQL. MongoDB and RabbitMQ remain in the compose file for the distributed corporate systems environment.
+The same users are also inserted into the local PostgreSQL application database through Liquibase.
 
 ## Start infrastructure
 
+Go to the docker folder and start PostgreSQL, pgAdmin and Keycloak:
+
 ```bash
 cd docker
-docker compose up -d
+docker compose up -d postgres pgadmin keycloak
 ```
 
-PostgreSQL connection:
+Services:
+
+| Service | URL |
+|---|---|
+| PostgreSQL | `localhost:5432` |
+| pgAdmin | `http://localhost:5050` |
+| Keycloak | `http://localhost:8082` |
+
+Keycloak admin console:
 
 ```text
-url: jdbc:postgresql://localhost:5432/mydb
-username: admin
-password: admin
+http://localhost:8082/admin
 ```
 
-pgAdmin:
+Bootstrap Keycloak admin:
 
 ```text
-http://localhost:5050
-email: admin@mail.com
-password: admin
+username: keycloak-admin
+password: keycloak-admin
 ```
 
-## Start application
+Application realm:
+
+```text
+corporate-users
+```
+
+Application client:
+
+```text
+corporate-user-service
+```
+
+## Start the application
+
+From the project root:
 
 ```bash
 mvn spring-boot:run
 ```
 
-Then open:
+or with Maven Wrapper:
 
-```text
-http://localhost:8080/users
+```powershell
+.\mvnw.cmd spring-boot:run
 ```
 
-## Main pages
-
-```text
-GET  /users                 User list, search and status filter
-GET  /users/new             Create user form
-POST /users                 Create user
-GET  /users/{id}            User details and password history
-GET  /users/{id}/edit       Edit user data
-POST /users/{id}/edit       Save user data
-GET  /users/{id}/password   Change password form
-POST /users/{id}/password   Change password
-GET  /users/{id}/status     Change status form
-POST /users/{id}/status     Change status
-POST /users/{id}/delete     Delete user
-```
-
-## JPA model
-
-`SystemUser` is the main entity. `PasswordHistory` stores each password hash change. The relationship is:
-
-```text
-SystemUser 1 --- * PasswordHistory
-```
-
-Hibernate creates these tables:
-
-```text
-system_users
-password_history
-```
-
-## Verification in PostgreSQL
-
-```sql
-select id, username, email, full_name, status, password_hash
-from system_users
-order by id;
-
-select ph.id, ph.user_id, ph.changed_at, ph.changed_by, ph.password_hash
-from password_history ph
-order by ph.id;
-```
-
-## Practical work report notes
-
-Recommended screenshots:
-
-1. Docker Compose file and PostgreSQL container.
-2. Spring Boot project structure.
-3. Entity classes `SystemUser` and `PasswordHistory`.
-4. Repository with custom search query.
-5. Service method for password hashing and status change.
-6. Thymeleaf user list page.
-7. Create user page.
-8. User details page with password history.
-9. Change password page.
-10. PostgreSQL tables in pgAdmin.
-
-## Automated tests
-
-The project includes JUnit 5 tests for controllers, repositories, services and end-to-end user-management scenarios.
-
-Run all tests:
-
-```bash
-mvn test
-```
-
-The tests use H2 in PostgreSQL compatibility mode, so PostgreSQL and Docker are not required for test execution. Detailed testing instructions are available in `TESTING.md`.
-
-
-## Practical Work 4: Spring Security + DAO Provider
-
-This version includes Spring Security integration for the previously created Thymeleaf/Hibernate application.
-
-Main additions:
-
-- Liquibase database migration for users, roles, user-role mapping and password history.
-- Default roles: `ADMIN` and `CUSTOMER`.
-- Default users created by migration:
-  - `admin` / `AdminPass123` → `ADMIN`.
-  - `customer` / `CustomerPass123` → `CUSTOMER`.
-- DAO authentication provider with `CorporateUserDetailsService`.
-- Role-based access control:
-  - `/users/**` → only `ADMIN`.
-  - `/cabinet/**` → only `CUSTOMER`.
-- Admin can create and manage customer accounts.
-- Customer can work only with own cabinet/profile/password.
-
-Login page:
+Open:
 
 ```text
 http://localhost:8080/login
 ```
 
-Additional documentation is available in `SECURITY.md`.
+Click **Увійти через Keycloak** and authenticate using one of the test users.
+
+## Access rules
+
+| URL | Required role |
+|---|---|
+| `/login` | Public |
+| `/users/**` | `ADMIN` |
+| `/cabinet/**` | `CUSTOMER` |
+
+After login:
+
+- `ADMIN` is redirected to `/users`.
+- `CUSTOMER` is redirected to `/cabinet`.
+
+## Role mapping
+
+Keycloak sends roles in token claims such as:
+
+```json
+{
+  "realm_access": {
+    "roles": ["ADMIN"]
+  }
+}
+```
+
+The application maps those roles to Spring Security authorities:
+
+```text
+ADMIN -> ROLE_ADMIN
+CUSTOMER -> ROLE_CUSTOMER
+```
+
+The mapping is implemented in:
+
+```text
+src/main/java/com/example/corporateusers/security/keycloak/KeycloakRoleMapper.java
+```
+
+## Local user synchronization
+
+After successful OAuth2 login, the application synchronizes Keycloak user profile data into the local PostgreSQL database. This allows the application to keep domain-specific user data while delegating authentication to Keycloak.
+
+Implementation:
+
+```text
+src/main/java/com/example/corporateusers/security/keycloak/KeycloakUserSynchronizer.java
+```
+
+The local database stores:
+
+- username;
+- email;
+- full name;
+- status;
+- roles;
+- Keycloak subject.
+
+## Database verification
+
+Use pgAdmin or psql:
+
+```sql
+select * from system_roles;
+
+select
+    u.id,
+    u.username,
+    u.email,
+    u.full_name,
+    u.status,
+    u.keycloak_subject,
+    r.code as role
+from system_users u
+join user_roles ur on ur.user_id = u.id
+join system_roles r on r.id = ur.role_id
+order by u.id;
+```
+
+## Important notes
+
+If you previously ran the non-Keycloak version and Liquibase reports that tables already exist, clean the schema or recreate the Docker volume:
+
+```bash
+docker compose down -v
+docker compose up -d postgres pgadmin keycloak
+```
+
+For a cleaner Liquibase setup, Hibernate is configured with:
+
+```yaml
+spring.jpa.hibernate.ddl-auto: validate
+```
+
+So Liquibase owns schema creation and Hibernate only validates the schema.

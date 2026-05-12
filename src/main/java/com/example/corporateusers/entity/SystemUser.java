@@ -38,6 +38,9 @@ public class SystemUser {
     @Column(nullable = false, unique = true, length = 160)
     private String email;
 
+    @Column(name = "keycloak_subject", length = 80)
+    private String keycloakSubject;
+
     @Column(nullable = false, length = 160)
     private String fullName;
 
@@ -116,6 +119,8 @@ public class SystemUser {
     public void setUsername(String username) { this.username = username; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+    public String getKeycloakSubject() { return keycloakSubject; }
+    public void setKeycloakSubject(String keycloakSubject) { this.keycloakSubject = keycloakSubject; }
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
     public String getPasswordHash() { return passwordHash; }

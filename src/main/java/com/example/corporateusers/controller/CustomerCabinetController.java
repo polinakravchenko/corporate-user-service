@@ -1,9 +1,9 @@
 package com.example.corporateusers.controller;
 
-import com.example.corporateusers.dto.PasswordChangeForm;
 import com.example.corporateusers.dto.UserUpdateForm;
 import com.example.corporateusers.entity.SystemUser;
 import com.example.corporateusers.exception.BusinessException;
+import com.example.corporateusers.security.keycloak.KeycloakPrincipalExtractor;
 import com.example.corporateusers.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
@@ -21,21 +21,23 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class CustomerCabinetController {
 
     private final UserService userService;
+    private final KeycloakPrincipalExtractor principalExtractor;
 
-    public CustomerCabinetController(UserService userService) {
+    public CustomerCabinetController(UserService userService, KeycloakPrincipalExtractor principalExtractor) {
         this.userService = userService;
+        this.principalExtractor = principalExtractor;
     }
 
     @GetMapping
     public String cabinet(Authentication authentication, Model model) {
-        SystemUser user = userService.getByUsername(authentication.getName());
+        SystemUser user = currentUser(authentication);
         model.addAttribute("user", user);
         return "cabinet/index";
     }
 
     @GetMapping("/edit")
     public String editProfileForm(Authentication authentication, Model model) {
-        SystemUser user = userService.getByUsername(authentication.getName());
+        SystemUser user = currentUser(authentication);
         UserUpdateForm form = new UserUpdateForm();
         form.setEmail(user.getEmail());
         form.setFullName(user.getFullName());
@@ -50,13 +52,14 @@ public class CustomerCabinetController {
                               BindingResult bindingResult,
                               Model model,
                               RedirectAttributes redirectAttributes) {
-        SystemUser user = userService.getByUsername(authentication.getName());
+        String username = principalExtractor.username(authentication);
+        SystemUser user = userService.getByUsername(username);
         if (bindingResult.hasErrors()) {
             model.addAttribute("user", user);
             return "cabinet/edit";
         }
         try {
-            userService.updateOwnProfile(authentication.getName(), form);
+            userService.updateOwnProfile(username, form);
             redirectAttributes.addFlashAttribute("success", "Дані профілю оновлено");
             return "redirect:/cabinet";
         } catch (BusinessException ex) {
@@ -66,32 +69,7 @@ public class CustomerCabinetController {
         }
     }
 
-    @GetMapping("/password")
-    public String passwordForm(Authentication authentication, Model model) {
-        model.addAttribute("user", userService.getByUsername(authentication.getName()));
-        model.addAttribute("form", new PasswordChangeForm());
-        return "cabinet/password";
-    }
-
-    @PostMapping("/password")
-    public String changePassword(Authentication authentication,
-                                 @Valid @ModelAttribute("form") PasswordChangeForm form,
-                                 BindingResult bindingResult,
-                                 Model model,
-                                 RedirectAttributes redirectAttributes) {
-        SystemUser user = userService.getByUsername(authentication.getName());
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("user", user);
-            return "cabinet/password";
-        }
-        try {
-            userService.changeOwnPassword(authentication.getName(), form);
-            redirectAttributes.addFlashAttribute("success", "Пароль успішно змінено");
-            return "redirect:/cabinet";
-        } catch (BusinessException ex) {
-            bindingResult.reject("business", ex.getMessage());
-            model.addAttribute("user", user);
-            return "cabinet/password";
-        }
+    private SystemUser currentUser(Authentication authentication) {
+        return userService.getByUsername(principalExtractor.username(authentication));
     }
 }
